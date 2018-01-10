@@ -26,14 +26,10 @@ This is a tensrflow implementation for the paper [Focal Loss for Dense Object De
 # Other Implementations :
 ## Pytorch 
 - [PyTorch-FPN](https://github.com/kuangliu/pytorch-fpn)
-- []()
 ## Tensorflow  
 - [FastFPN](https://github.com/wuzheng-sjtu/FastFPN)
 - [R-DFPN: Rotation Dense Feature Pyramid Networks](https://github.com/yangxue0827/R-DFPN_FPN_Tensorflow)
-- []()
 - [Feature Pyramid Networks for Object Detection](https://github.com/yangxue0827/FPN_Tensorflow)
-- []()
-- []()
 ## Mxnet
 - [focal-loss](https://github.com/unsky/focal-loss)
 - [Retina-Net](https://github.com/unsky/RetinaNet)
