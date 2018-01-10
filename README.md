@@ -4,6 +4,7 @@ This is a tensrflow implementation for the paper [Focal Loss for Dense Object De
 # Refences:
 - [Focal Loss for Dense Object Detection](https://arxiv.org/abs/1708.02002)
 - [Feature Pyramid Networks for Object Detection](https://arxiv.org/abs/1708.02002)
+- [R2CNN: Rotational Region CNN for Orientation Robust Scene Text Detection](https://arxiv.org/abs/1706.09579)
 
 # TO DO :
 - 
@@ -29,6 +30,10 @@ This is a tensrflow implementation for the paper [Focal Loss for Dense Object De
 ## Tensorflow  
 - [FastFPN](https://github.com/wuzheng-sjtu/FastFPN)
 - [R-DFPN: Rotation Dense Feature Pyramid Networks](https://github.com/yangxue0827/R-DFPN_FPN_Tensorflow)
+- []()
+- [Feature Pyramid Networks for Object Detection](https://github.com/yangxue0827/FPN_Tensorflow)
+- []()
+- []()
 ## Mxnet
 - [focal-loss](https://github.com/unsky/focal-loss)
 - [Retina-Net](https://github.com/unsky/RetinaNet)
