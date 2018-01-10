@@ -9,17 +9,32 @@ This is a tensrflow implementation for the paper [Focal Loss for Dense Object De
 - 
 - 
 - 
+# Requirements:
+` - TensorFlow 
+  - `
+# Usage :
+`                     `
+# Results: 
+## Results on VOC :
+
+## Results on COCO :
+
+## Results on Kitti : 
+
 
 # Other Implementations :
 ## Pytorch 
+- [PyTorch-FPN](https://github.com/kuangliu/pytorch-fpn)
 - []()
-- 
 ## Tensorflow  
-- []()
-- 
+- [FastFPN](https://github.com/wuzheng-sjtu/FastFPN)
+- [R-DFPN: Rotation Dense Feature Pyramid Networks](https://github.com/yangxue0827/R-DFPN_FPN_Tensorflow)
 ## Mxnet
-- []()
-- 
+- [focal-loss](https://github.com/unsky/focal-loss)
+- [Retina-Net](https://github.com/unsky/RetinaNet)
+- [Feature Pyramid Networks for Object Detection on mxnet](https://github.com/unsky/FPN-mxnet)
 ## Caffe
-- []()
-- 
+- [Reproduction of Focal-loss on Caffe](https://github.com/sciencefans/Focal-Loss)
+- [loss layer implementation](https://github.com/zimenglan-sysu-512/Focal-Loss)
+- [Caffe implementation of "Focal Loss" for SSD.](https://github.com/chuanqi305/FocalLoss)
+- [Feature Pyramid Network on caffe](https://github.com/unsky/FPN)
