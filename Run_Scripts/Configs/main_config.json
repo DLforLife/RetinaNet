@@ -1,0 +1,15 @@
+{
+  "learning_rate": 1.0e-3,
+  "momentum": 0.99,
+  "weight_decay": 0.00005,
+  "log_interval":2000,
+  "batch_size":16,
+  "num_classes": 9,
+  "max_epoch":10,
+  "exp_dir":"Coco_exp_1",
+  "model": "",
+  "resume_training": 0,
+  "checkpoint":"best_model.ckpt",
+  "x_train":"data.npy",
+  "y_train":"labels.npy",
+}
