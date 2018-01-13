@@ -5,3 +5,4 @@ Example: summary writings
 
 class base_agent:
 	def __init__(self):
+		print("in base_agent")
