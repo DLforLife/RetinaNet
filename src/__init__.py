@@ -7,7 +7,9 @@ import inspect
 @Date   : 13/Jan/2018
 '''
 #"""
-#reference : https://stackoverflow.com/questions/3365740/how-to-import-all-submodules
+#reference :
+# https://michaelheap.com/python-dynamically-load-all-modules-in-a-folder/
+# https://stackoverflow.com/questions/3365740/how-to-import-all-submodules
 #"""
 
 def import_submodules(package, recursive=True):
