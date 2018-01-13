@@ -41,7 +41,7 @@ def create_experiment_dirs(exp_dir):
 		return experiment_dir, summary_dir, checkpoint_dir ,output_dir
 	except Exception as err:
 		print("Creating directories error: {0}".format(err))
-	exit(-1)
+		exit(-1)
 
 def class_by_name(model):
 	module=None

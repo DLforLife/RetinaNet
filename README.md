@@ -7,9 +7,7 @@ This is a tensrflow implementation for the paper [Focal Loss for Dense Object De
 - [R2CNN: Rotational Region CNN for Orientation Robust Scene Text Detection](https://arxiv.org/abs/1706.09579)
 
 # TO DO :
-- 
-- 
-- 
+
 # Requirements:
 ` - TensorFlow 
   - `
