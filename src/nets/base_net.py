@@ -8,7 +8,7 @@ class Params:
     pass
 
 
-class BaseModel:
+class BaseNet:
     """
     Base class to be inherited from any model
     """
