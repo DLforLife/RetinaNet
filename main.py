@@ -10,11 +10,15 @@ from src import *
 def main():
 	config_args = parse_args()
 	create_experiment_dirs(config_args.exp_dir)
-
 	model=class_by_name(config_args.model)
 	agent=class_by_name(config_args.agent)
 	agent=agent()
-
+	#######
+	#todo :
+	#setup the agent structure so we can pass the model to it
+	#expected api :
+	# agent=agent(config=config_args,model_used=model)
+	#######
 if __name__ == '__main__':
 	main()
 

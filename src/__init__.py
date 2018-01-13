@@ -2,6 +2,13 @@ import importlib
 import pkgutil
 import sys
 import inspect
+'''
+@author : Waleed Mohamed Ali
+@Date   : 13/Jan/2018
+'''
+#"""
+#reference : https://stackoverflow.com/questions/3365740/how-to-import-all-submodules
+#"""
 
 def import_submodules(package, recursive=True):
 	""" Import all submodules of a module, recursively, including subpackages
