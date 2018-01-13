@@ -9,10 +9,18 @@ This is a tensrflow implementation for the paper [Focal Loss for Dense Object De
 # TO DO :
 
 # Requirements:
-` - TensorFlow 
-  - `
+```markdown
+keras
+tensorflow>=1.2
+bunch
+```  
 # Usage :
-`                     `
+
+  ```bash
+    pip install -r requirement.txt
+    chmod 777 run.sh
+    ./run.sh
+   ```
 # Results: 
 ## Results on VOC :
 
