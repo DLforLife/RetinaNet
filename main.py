@@ -19,6 +19,13 @@ def main():
 	#expected api :
 	# agent=agent(config=config_args,model_used=model)
 	#######
+
+	try:
+		agent.run()
+		agent.finish()
+	except KeyboardInterrupt :
+		agent.finish()
+
 if __name__ == '__main__':
 	main()
 
