@@ -40,6 +40,7 @@ class FPN:
     def build(self):
         self.init_helper_variables()
         self.init_input()
+        self.init_resnet()
         self.init_network()
         self.init_output()
 
@@ -60,24 +61,53 @@ class FPN:
                                                      self.config.number_of_anchors, 4])
             self.is_training = tf.placeholder(tf.bool)
 
+    def init_resnet(self):
+        with tf.variable_scope('stage_1'):
+            x = self._conv('conv_7x7', self.x, 64, kernel_size=(7,7), stride=(2,2))
+            self.res_stage1_out = tf.nn.max_pool(x, [3,3], strides=[2,2], padding='VALID')
+
+        with tf.variable_scope('stage_2'):
+            x = self._residual_block('res_block_1', self.res_stage1_out, filters=[64, 64, 256], three_stage=True)
+            x = self._residual_block('res_block_2', x, filters=[64, 64, 256], three_stage=True)
+            self.res_stage2_out = self._residual_block('res_block_3', x, filters=[64, 64, 256], three_stage=True)
+
+        with tf.variable_scope('stage_3'):
+            x = self._residual_block('res_block_1', self.res_stage2_out, filters=[128, 128, 512], three_stage=True)
+            x = self._residual_block('res_block_2', x, filters=[128, 128, 512], three_stage=True)
+            x = self._residual_block('res_block_3', x, filters=[128, 128, 512], three_stage=True)
+            self.res_stage3_out = self._residual_block('res_block_4', x, filters=[128, 128, 512], three_stage=True)
+
+        with tf.variable_scope('stage_4'):
+            x = self._residual_block('res_block_1', self.res_stage3_out, filters=[256, 256, 1024], three_stage=True)
+            x = self._residual_block('res_block_2', x, filters=[256, 256, 1024], three_stage=True)
+            x = self._residual_block('res_block_3', x, filters=[256, 256, 1024], three_stage=True)
+            x = self._residual_block('res_block_5', x, filters=[256, 256, 1024], three_stage=True)
+            x = self._residual_block('res_block_6', x, filters=[256, 256, 1024], three_stage=True)
+            self.res_stage4_out = self._residual_block('res_block_7', x, filters=[256, 256, 1024], three_stage=True)
+
+        with tf.variable_scope('stage_5'):
+            x = self._residual_block('res_block_1', self.res_stage4_out, filters=[512, 512, 2048], three_stage=True)
+            x = self._residual_block('res_block_2', x, filters=[512, 512, 2048], three_stage=True)
+            self.res_stage5_out = self._residual_block('res_block_3', x, filters=[512, 512, 2048], three_stage=True)
+
     def init_network(self):
-        with tf.variable_scope('buttom_up_pathway'):
-            with tf.variable_scope('conv_1_x'):
-                self.conv1 = self._conv('conv1', self.x, num_filters=3)
-                self.conv1 = self._relu('relu1', self.conv1)
-            with tf.variable_scope('conv_2_x'):
-                self.conv2 = self._conv('conv2', self.conv1, num_filters=16)
-                self.conv2 = self._relu('relu2', self.conv2)
-            with tf.variable_scope('conv_3_x'):
-                self.conv3 = self._conv('conv3', self.conv2, num_filters=16)
-                self.conv3 = self._relu('relu3', self.conv3)
         with tf.variable_scope('top_down_pathway'):
-            with tf.variable_scope('merge_1'):
-                self.merge1 = self._merge_block(self.conv2, self.conv3)
+            with tf.variable_scope('p5'):
+                self.merge1 = self._merge_block(self.res_stage4_out, self.res_stage5_out)
             self.class_subnet1 = self._class_subnet(self.merge1)
-            with tf.variable_scope('merge2'):
-                self.merge2 = self._merge_block(self.conv1, self.merge1)
+            with tf.variable_scope('p4'):
+                self.merge2 = self._merge_block(self.res_stage3_out, self.merge1)
             self.class_subnet2 = self._class_subnet(self.merge2)
+            with tf.variable_scope('p3'):
+                self.merge3 = self._merge_block(self.res_stage2_out, self.merge2)
+            self.class_subnet3 = self._class_subnet(self.merge3)
+            with tf.variable_scope('p6'):
+                self.p6 = self._conv('conv', self.res_stage5_out, 256, (3,3), stride=(2,2))
+            self.class_subnet2 = self._class_subnet(self.p6)
+            with tf.variable_scope('p7'):
+                self.p7 = self._relu('relu', self.p6)
+                self.p7 = self._conv('conv', self.res_stage5_out, 256, (3,3), stride=(2,2))
+            self.class_subnet2 = self._class_subnet(self.p7)
 
 
     def init_output(self):
@@ -113,6 +143,59 @@ class FPN:
 
     def _box_subnet(self, input):
         raise NotImplementedError("box subnet not implemented")
+
+    def _residual_block(self, name, x, filters, pool_first=False, strides=1, three_stage=False):
+        print('Building residual unit: %s' % name)
+        with tf.variable_scope(name):
+            # get input channels
+            in_channel = x.shape.as_list()[-1]
+
+            # Shortcut connection
+            shortcut = tf.identity(x)
+            filters1, filters2, filters3 = filters
+            if pool_first:
+                if in_channel == filters:
+                    if strides == 1:
+                        shortcut = tf.identity(x)
+                    else:
+                        shortcut = tf.nn.max_pool(x, [1, strides, strides, 1], [1, strides, strides, 1], 'VALID')
+                else:
+                    shortcut = self._conv('shortcut_conv', x,
+                                          num_filters=filters, kernel_size=(1, 1), stride=(strides, strides))
+
+            # Residual
+            if(three_stage):
+                x = self._conv('conv_1', x,
+                               num_filters=filters1, kernel_size=(1, 1), stride=(strides, strides))
+                x = self._bn('bn_1', x)
+                x = self._relu('relu_1', x)
+                x = self._conv('conv_2', x,
+                               num_filters=filters2, kernel_size=(3, 3))
+                x = self._bn('bn_2', x)
+                x = self._relu('relu_2', x)
+                x = self._conv('conv_3', x,
+                               num_filters=filters3, kernel_size=(1, 1), stride=(strides, strides))
+                x = self._bn('bn_3', x)
+                # Merge
+                x = x + shortcut
+                x = self._relu('relu_3', x)
+
+            else:
+                x = self._conv('conv_1', x,
+                               num_filters=filters1, kernel_size=(3, 3), stride=(strides, strides))
+                x = self._bn('bn_1', x)
+                x = self._relu('relu_1', x)
+                x = self._conv('conv_2', x,
+                               num_filters=filters2, kernel_size=(3, 3))
+                x = self._bn('bn_2', x)
+
+                # Merge
+                x = x + shortcut
+                x = self._relu('relu_2', x)
+
+            print('residual-unit-%s-shape: ' % name + str(x.shape.as_list()))
+
+            return x
 
     @staticmethod
     def _conv(name, x, num_filters=16, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
