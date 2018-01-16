@@ -9,7 +9,7 @@ from src import *
 
 def main():
 	config_args = parse_args()
-	create_experiment_dirs(config_args.exp_dir)
+	folders_list = create_experiment_dirs(config_args.exp_dir)
 	model=class_by_name(config_args.model)
 	agent=class_by_name(config_args.agent)
 	agent=agent()
@@ -17,7 +17,7 @@ def main():
 	#todo :
 	#setup the agent structure so we can pass the model to it
 	#expected api :
-	# agent=agent(config=config_args,model_used=model)
+	# agent=agent(config=config_args,folders=folders_list,model_used=model)
 	#######
 
 	try:
