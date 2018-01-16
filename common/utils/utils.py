@@ -28,7 +28,8 @@ def parse_args():
 def create_experiment_dirs(exp_dir):
 
 	experiment_dir = os.path.realpath("experiments/" + exp_dir + "/")
-	summary_dir = experiment_dir + '/summaries/'
+	train_summary_dir = experiment_dir + '/summaries/training'
+	valid_summary_dir = experiment_dir + '/summaries/validation'
 	checkpoint_dir = experiment_dir + '/checkpoints/'
 	output_dir = experiment_dir + '/outputs/'
 	dirs = [summary_dir, checkpoint_dir,output_dir]
@@ -38,7 +39,7 @@ def create_experiment_dirs(exp_dir):
 				os.makedirs(dir_)
 		print("Experiment directories created!")
 		# return experiment_dir, summary_dir, checkpoint_dir, output_dir, test_dir
-		return experiment_dir, summary_dir, checkpoint_dir ,output_dir
+		return experiment_dir, train_summary_dir ,valid_summary_dir, checkpoint_dir ,output_dir
 	except Exception as err:
 		print("Creating directories error: {0}".format(err))
 		exit(-1)
