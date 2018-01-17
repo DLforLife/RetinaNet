@@ -4,7 +4,6 @@ This is a tensrflow implementation for the paper [Focal Loss for Dense Object De
 # Refences:
 - [Focal Loss for Dense Object Detection](https://arxiv.org/abs/1708.02002)
 - [Feature Pyramid Networks for Object Detection](https://arxiv.org/abs/1708.02002)
-- [R2CNN: Rotational Region CNN for Orientation Robust Scene Text Detection](https://arxiv.org/abs/1706.09579)
 
 # TO DO :
 
