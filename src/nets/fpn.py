@@ -2,6 +2,11 @@
 An implementation for the feature pyramid network class.
 """
 import tensorflow as tf
+from bunch import Bunch
+import importlib
+
+importlib.import_module('layers')
+import layers
 
 class FPN:
     def __init__(self, config):
@@ -83,8 +88,8 @@ class FPN:
 
     def init_resnet(self):
         with tf.variable_scope('stage_1'):
-            x = self._conv('conv_7x7', self.x, 64, kernel_size=(7,7), stride=(2,2))
-            self.res_stage1_out = tf.nn.max_pool(x, [3,3], strides=[2,2], padding='VALID')
+            x = self._conv('conv_7x7', self.x, 256, kernel_size=(7,7), stride=(2,2))
+            self.res_stage1_out = tf.nn.max_pool(x, [1,3,3,1], strides=[1, 2, 2, 1], padding='VALID')
 
         with tf.variable_scope('stage_2'):
             x = self._residual_block('res_block_1', self.res_stage1_out, filters=[64, 64, 256], three_stage=True)
@@ -113,13 +118,13 @@ class FPN:
     def init_network(self):
         with tf.variable_scope('top_down_pathway'):
             with tf.variable_scope('p5'):
-                self.merge1 = self._merge_block(self.res_stage4_out, self.res_stage5_out)
+                self.merge1 = self._merge_block('merge', self.res_stage4_out, self.res_stage5_out)
             self.class_subnet1 = self._class_subnet(self.merge1)
             with tf.variable_scope('p4'):
-                self.merge2 = self._merge_block(self.res_stage3_out, self.merge1)
+                self.merge2 = self._merge_block('merge', self.res_stage3_out, self.merge1)
             self.class_subnet2 = self._class_subnet(self.merge2)
             with tf.variable_scope('p3'):
-                self.merge3 = self._merge_block(self.res_stage2_out, self.merge2)
+                self.merge3 = self._merge_block('merge', self.res_stage2_out, self.merge2)
             self.class_subnet3 = self._class_subnet(self.merge3)
             with tf.variable_scope('p6'):
                 self.p6 = self._conv('conv', self.res_stage5_out, 256, (3,3), stride=(2,2))
@@ -159,32 +164,27 @@ class FPN:
         raise NotImplementedError("box subnet not implemented")
 
     def _merge_block(self, name, upstream, downstream):
-        upsampled = tf.image.resize_images(downstream, upstream.get_shape(), method=ResizeMethod.NEAREST_NEIGHBOR, align_corners=False)
+        upsampled = tf.image.resize_images(downstream, upstream.get_shape()[1:3], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=False)
         conv1x1 =  self._conv(name, upstream, num_filters=downstream.shape[-1], kernel_size=(1,1))
         merged = tf.add(upsampled, conv1x1, name)
         return merged
 
-    def _residual_block(self, name, x, filters, pool_first=False, strides=1, three_stage=False):
+    def _residual_block(self, name, x, filters, strides=1, three_stage=False):
         print('Building residual unit: %s' % name)
         with tf.variable_scope(name):
             # get input channels
             in_channel = x.shape.as_list()[-1]
-
             # Shortcut connection
-            shortcut = tf.identity(x)
-            filters1, filters2, filters3 = filters
-            if pool_first:
-                if in_channel == filters:
-                    if strides == 1:
-                        shortcut = tf.identity(x)
-                    else:
-                        shortcut = tf.nn.max_pool(x, [1, strides, strides, 1], [1, strides, strides, 1], 'VALID')
-                else:
-                    shortcut = self._conv('shortcut_conv', x,
-                                          num_filters=filters, kernel_size=(1, 1), stride=(strides, strides))
+            if(not in_channel==filters[-1]):
+                shortcut = self._conv('shortcut_conv', x,
+                                          num_filters=filters[-1], kernel_size=(1, 1), stride=(strides, strides))
+            else:
+                shortcut = tf.identity(x)
 
             # Residual
             if(three_stage):
+                filters1, filters2, filters3 = filters
+
                 x = self._conv('conv_1', x,
                                num_filters=filters1, kernel_size=(1, 1), stride=(strides, strides))
                 x = self._bn('bn_1', x)
@@ -201,6 +201,8 @@ class FPN:
                 x = self._relu('relu_3', x)
 
             else:
+                filters1, filters2 = filters
+
                 x = self._conv('conv_1', x,
                                num_filters=filters1, kernel_size=(3, 3), stride=(strides, strides))
                 x = self._bn('bn_1', x)
@@ -217,6 +219,10 @@ class FPN:
 
             return x
 
+    def _bn(self, name, x):
+        with tf.variable_scope(name):
+            return tf.layers.batch_normalization(x, training=self.is_training)
+
     @staticmethod
     def _conv(name, x, num_filters=16, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
               initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0):
@@ -224,8 +230,8 @@ class FPN:
         with tf.variable_scope(name):
             stride = [1, stride[0], stride[1], 1]
             kernel_shape = [kernel_size[0], kernel_size[1], x.shape[-1], num_filters]
-            w = _variable_with_weight_decay(kernel_shape, initializer, l2_strength)
-            variable_summaries(w)
+            w = layers._variable_with_weight_decay(kernel_shape, initializer, l2_strength)
+            #variable_summaries(w)
             conv = tf.nn.conv2d(x, w, stride, padding)
             return conv
 
@@ -237,5 +243,17 @@ class FPN:
     def _relu(name, x):
         with tf.variable_scope(name):
             return tf.nn.relu(x)
+
+
+if __name__ == '__main__':
+    config = {"learning_rate": 1.0e-3,"momentum": 0.99,"weight_decay": 0.00005,"log_interval":2000,"batch_size":16,
+              "number_of_classes": 9,"max_epoch":10,"exp_dir":"Coco_exp_1","model": "","resume_training": 0,
+              "checkpoint":"best_model.ckpt","x_train":"data.npy","y_train":"labels.npy", "img_width":500,
+              "img_height":500, "num_channels":3, "number_of_anchors": 9}
+    config = Bunch(config)
+    fpn = FPN(config)
+    fpn.build()
+
+
 
 
