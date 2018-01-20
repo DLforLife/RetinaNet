@@ -15,14 +15,12 @@ class CrossEntropy:
         self.logits = logits
         self.labels = labels
 
-        self.calulate()
-
-    def calulate(self):
+    def calculate(self):
         """
         Computing the focal loss
         Args:
         Returns:
         """
-        loss = tf.nn.sparse_softmax_with_cross_entropy_with_logits(logits=self.logits, labels=self.labels)
+        loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.labels)
         loss = tf.reduce_mean(loss)
         return loss
