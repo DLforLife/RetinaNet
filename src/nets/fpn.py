@@ -176,7 +176,3 @@ if __name__ == '__main__':
     config = Bunch(config)
     fpn = FPN(config)
     fpn.build()
-
-
-
-
