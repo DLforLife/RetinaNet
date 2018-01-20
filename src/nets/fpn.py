@@ -13,6 +13,7 @@ class FPN:
         self.config.img_size = self.config.img_width * self.config.img_height
         self.number_of_anchors = self.config.number_of_anchors
         self.number_of_classes = self.config.number_of_classes
+        self.confidence_threshold = self.config.confidence_threshold
         #########################################
         self.x = None
         self.y_classes = None
@@ -132,18 +133,18 @@ class FPN:
             with tf.variable_scope('p7'):
                 self.p7 =relu('relu', self.p6)
                 self.p7 =conv('conv', self.stage5_out, 256, (3, 3), stride=(2, 2))
-            self.class_subnet1 = self._class_subnet(self.merge1)
-            self.class_subnet2 = self._class_subnet(self.merge2)
-            self.class_subnet3 = self._class_subnet(self.merge3)
-            self.class_subnet2 = self._class_subnet(self.p6)
-            self.class_subnet2 = self._class_subnet(self.p7)
+            self.class_subnet_out1 = self._class_subnet(self.merge1)
+            self.class_subnet_out2 = self._class_subnet(self.merge2)
+            self.class_subnet_out3 = self._class_subnet(self.merge3)
+            self.class_subnet_out4 = self._class_subnet(self.p6)
+            self.class_subnet_out5 = self._class_subnet(self.p7)
 
 
     def init_output(self):
         with tf.name_scope('output_classes'):
-            self.y_out_classes = self.class_subnet1 + self.class_subnet2
+            self.y_out_classes = self.class_subnet_out1 + self.class_subnet_out2
         with tf.name_scope('output_boxes'):
-            self.y_out_boxes = self.box_subnet1 + self.box_subnet2
+            self.y_out_boxes = self.box_subnet_out1 + self.box_subnet_out2
 
     def _class_subnet(self, input):
         with tf.variable_scope('class_subnet'):
@@ -171,7 +172,7 @@ if __name__ == '__main__':
     config = {"learning_rate": 1.0e-3, "momentum": 0.99, "weight_decay": 0.00005, "log_interval": 2000, "batch_size": 16,
               "number_of_classes": 9, "max_epoch": 10, "exp_dir": "Coco_exp_1", "model": "", "resume_training": 0,
               "checkpoint": "best_model.ckpt", "x_train": "data.npy", "y_train": "labels.npy", "img_width": 512,
-              "img_height": 512, "num_channels": 3, "number_of_anchors": 9}
+              "img_height": 512, "num_channels": 3, "number_of_anchors": 9, "confidence_threshold": 0.05}
     config = Bunch(config)
     fpn = FPN(config)
     fpn.build()
