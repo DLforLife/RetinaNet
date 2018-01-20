@@ -3,16 +3,16 @@ An implementation for the feature pyramid network class.
 """
 import tensorflow as tf
 from bunch import Bunch
-import importlib
 
-importlib.import_module('layers')
-import layers
+from layers import *
 
 class FPN:
     def __init__(self, config):
         self.config = config
         #########################################
         self.config.img_size = self.config.img_width * self.config.img_height
+        self.number_of_anchors = self.config.number_of_anchors
+        self.number_of_classes = self.config.number_of_classes
         #########################################
         self.x = None
         self.y_classes = None
@@ -76,62 +76,66 @@ class FPN:
                                                  self.config.img_width,
                                                  self.config.num_channels])
             self.y_classes = tf.placeholder(tf.float32, [self.config.batch_size,
+                                                         self.config.img_height,
+                                                         self.config.img_width,
+                                                         self.config.number_of_anchors,
+                                                         self.config.number_of_classes])
+            self.y_boxes = tf.placeholder(tf.float32, [self.config.batch_size,
                                                        self.config.img_height,
                                                        self.config.img_width,
-                                                       self.config.number_of_anchors,
-                                                       self.config.number_of_classes])
-            self.y_boxes = tf.placeholder(tf.float32, [self.config.batch_size,
-                                                     self.config.img_height,
-                                                     self.config.img_width,
-                                                     self.config.number_of_anchors, 4])
+                                                       self.config.number_of_anchors, 4])
             self.is_training = tf.placeholder(tf.bool)
 
     def init_resnet(self):
         with tf.variable_scope('stage_1'):
-            x = self._conv('conv_7x7', self.x, 256, kernel_size=(7,7), stride=(2,2))
-            self.res_stage1_out = tf.nn.max_pool(x, [1,3,3,1], strides=[1, 2, 2, 1], padding='VALID')
+            x =conv('conv_7x7', self.x, 256, kernel_size=(7, 7), stride=(2, 2))
+            self.stage1_out = tf.nn.max_pool(x, [1, 3, 3, 1], strides=[1, 2, 2, 1], padding='VALID')
 
         with tf.variable_scope('stage_2'):
-            x = self._residual_block('res_block_1', self.res_stage1_out, filters=[64, 64, 256], three_stage=True)
-            x = self._residual_block('res_block_2', x, filters=[64, 64, 256], three_stage=True)
-            self.res_stage2_out = self._residual_block('res_block_3', x, filters=[64, 64, 256], three_stage=True)
+            x =residual_block('res_block_1', self.stage1_out, filters=[64, 64, 256], is_training=self.is_training)
+            x =residual_block('res_block_2', x, filters=[64, 64, 256], is_training=self.is_training)
+            self.stage2_out =residual_block('res_block_3', x, filters=[64, 64, 256], is_training=self.is_training)
 
         with tf.variable_scope('stage_3'):
-            x = self._residual_block('res_block_1', self.res_stage2_out, filters=[128, 128, 512], three_stage=True)
-            x = self._residual_block('res_block_2', x, filters=[128, 128, 512], three_stage=True)
-            x = self._residual_block('res_block_3', x, filters=[128, 128, 512], three_stage=True)
-            self.res_stage3_out = self._residual_block('res_block_4', x, filters=[128, 128, 512], three_stage=True)
+            x =residual_block('res_block_1', self.stage2_out, filters=[128, 128, 512], strides=2, is_training=self.is_training)
+            x =residual_block('res_block_2', x, filters=[128, 128, 512], is_training=self.is_training)
+            x =residual_block('res_block_3', x, filters=[128, 128, 512], is_training=self.is_training)
+            self.stage3_out =residual_block('res_block_4', x, filters=[128, 128, 512], is_training=self.is_training)
 
         with tf.variable_scope('stage_4'):
-            x = self._residual_block('res_block_1', self.res_stage3_out, filters=[256, 256, 1024], three_stage=True)
-            x = self._residual_block('res_block_2', x, filters=[256, 256, 1024], three_stage=True)
-            x = self._residual_block('res_block_3', x, filters=[256, 256, 1024], three_stage=True)
-            x = self._residual_block('res_block_5', x, filters=[256, 256, 1024], three_stage=True)
-            x = self._residual_block('res_block_6', x, filters=[256, 256, 1024], three_stage=True)
-            self.res_stage4_out = self._residual_block('res_block_7', x, filters=[256, 256, 1024], three_stage=True)
+            x =residual_block('res_block_1', self.stage3_out, filters=[256, 256, 1024], strides=2, is_training=self.is_training)
+            x =residual_block('res_block_2', x, filters=[256, 256, 1024], is_training=self.is_training)
+            x =residual_block('res_block_3', x, filters=[256, 256, 1024], is_training=self.is_training)
+            x =residual_block('res_block_5', x, filters=[256, 256, 1024], is_training=self.is_training)
+            x =residual_block('res_block_6', x, filters=[256, 256, 1024], is_training=self.is_training)
+            self.stage4_out =residual_block('res_block_7', x, filters=[256, 256, 1024], is_training=self.is_training)
 
         with tf.variable_scope('stage_5'):
-            x = self._residual_block('res_block_1', self.res_stage4_out, filters=[512, 512, 2048], three_stage=True)
-            x = self._residual_block('res_block_2', x, filters=[512, 512, 2048], three_stage=True)
-            self.res_stage5_out = self._residual_block('res_block_3', x, filters=[512, 512, 2048], three_stage=True)
+            x =residual_block('res_block_1', self.stage4_out, filters=[512, 512, 2048], strides=2, is_training=self.is_training)
+            x =residual_block('res_block_2', x, filters=[512, 512, 2048], is_training=self.is_training)
+            self.stage5_out =residual_block('res_block_3', x, filters=[512, 512, 2048], is_training=self.is_training)
 
     def init_network(self):
         with tf.variable_scope('top_down_pathway'):
             with tf.variable_scope('p5'):
-                self.merge1 = self._merge_block('merge', self.res_stage4_out, self.res_stage5_out)
-            self.class_subnet1 = self._class_subnet(self.merge1)
+                merge0 =conv('conv1x1', self.stage5_out, num_filters=256, kernel_size=(1, 1), stride=(1, 1))
+                self.merge1 =merge_block('merge', self.stage4_out, merge0)
+            print('merge1 shape:', self.merge1.get_shape())
             with tf.variable_scope('p4'):
-                self.merge2 = self._merge_block('merge', self.res_stage3_out, self.merge1)
-            self.class_subnet2 = self._class_subnet(self.merge2)
+                self.merge2 =merge_block('merge', self.stage3_out, self.merge1)
+            print('merge2 shape:', self.merge2.get_shape())
             with tf.variable_scope('p3'):
-                self.merge3 = self._merge_block('merge', self.res_stage2_out, self.merge2)
-            self.class_subnet3 = self._class_subnet(self.merge3)
+                self.merge3 =merge_block('merge', self.stage2_out, self.merge2)
+            print('merge3 shape:', self.merge3.get_shape())
             with tf.variable_scope('p6'):
-                self.p6 = self._conv('conv', self.res_stage5_out, 256, (3,3), stride=(2,2))
-            self.class_subnet2 = self._class_subnet(self.p6)
+                self.p6 =conv('conv', self.stage5_out, 256, (3, 3), stride=(2, 2))
             with tf.variable_scope('p7'):
-                self.p7 = self._relu('relu', self.p6)
-                self.p7 = self._conv('conv', self.res_stage5_out, 256, (3,3), stride=(2,2))
+                self.p7 =relu('relu', self.p6)
+                self.p7 =conv('conv', self.stage5_out, 256, (3, 3), stride=(2, 2))
+            self.class_subnet1 = self._class_subnet(self.merge1)
+            self.class_subnet2 = self._class_subnet(self.merge2)
+            self.class_subnet3 = self._class_subnet(self.merge3)
+            self.class_subnet2 = self._class_subnet(self.p6)
             self.class_subnet2 = self._class_subnet(self.p7)
 
 
@@ -145,111 +149,29 @@ class FPN:
         with tf.variable_scope('class_subnet'):
             with tf.variable_scope('conv_1_x'):
                 conv1 = tf.layers.conv2d(input, 256, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv1')
-                conv1 = self._relu('relu1', conv1)
+                conv1 =relu('relu1', conv1)
             with tf.variable_scope('conv_2_x'):
                 conv2 = tf.layers.conv2d(conv1, 256, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv2')
-                conv2 = self._relu('relu2', conv2)
+                conv2 =relu('relu2', conv2)
             with tf.variable_scope('conv_3_x'):
                 conv3 = tf.layers.conv2d(conv2, 256, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv3')
-                conv3 = self._relu('relu3', conv3)
+                conv3 =relu('relu3', conv3)
             with tf.variable_scope('conv_4_x'):
                 conv4 = tf.layers.conv2d(conv3, 256, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv4')
-                conv4 = self._relu('relu4', conv4)
+                conv4 =relu('relu4', conv4)
             with tf.variable_scope('conv_5_x'):
-                conv5 = tf.layers.conv2d(conv4, self.y_classes * self.y_boxes, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv5')
-                conv5 = self._sigmoid('sigmoid5', conv5)
+                conv5 = tf.layers.conv2d(conv4, self.number_of_anchors * self.number_of_classes, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv5')
+                conv5 =sigmoid('sigmoid5', conv5)
                 return conv5
 
     def _box_subnet(self, input):
         raise NotImplementedError("box subnet not implemented")
 
-    def _merge_block(self, name, upstream, downstream):
-        upsampled = tf.image.resize_images(downstream, upstream.get_shape()[1:3], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, align_corners=False)
-        conv1x1 =  self._conv(name, upstream, num_filters=downstream.shape[-1], kernel_size=(1,1))
-        merged = tf.add(upsampled, conv1x1, name)
-        return merged
-
-    def _residual_block(self, name, x, filters, strides=1, three_stage=False):
-        print('Building residual unit: %s' % name)
-        with tf.variable_scope(name):
-            # get input channels
-            in_channel = x.shape.as_list()[-1]
-            # Shortcut connection
-            if(not in_channel==filters[-1]):
-                shortcut = self._conv('shortcut_conv', x,
-                                          num_filters=filters[-1], kernel_size=(1, 1), stride=(strides, strides))
-            else:
-                shortcut = tf.identity(x)
-
-            # Residual
-            if(three_stage):
-                filters1, filters2, filters3 = filters
-
-                x = self._conv('conv_1', x,
-                               num_filters=filters1, kernel_size=(1, 1), stride=(strides, strides))
-                x = self._bn('bn_1', x)
-                x = self._relu('relu_1', x)
-                x = self._conv('conv_2', x,
-                               num_filters=filters2, kernel_size=(3, 3))
-                x = self._bn('bn_2', x)
-                x = self._relu('relu_2', x)
-                x = self._conv('conv_3', x,
-                               num_filters=filters3, kernel_size=(1, 1), stride=(strides, strides))
-                x = self._bn('bn_3', x)
-                # Merge
-                x = x + shortcut
-                x = self._relu('relu_3', x)
-
-            else:
-                filters1, filters2 = filters
-
-                x = self._conv('conv_1', x,
-                               num_filters=filters1, kernel_size=(3, 3), stride=(strides, strides))
-                x = self._bn('bn_1', x)
-                x = self._relu('relu_1', x)
-                x = self._conv('conv_2', x,
-                               num_filters=filters2, kernel_size=(3, 3))
-                x = self._bn('bn_2', x)
-
-                # Merge
-                x = x + shortcut
-                x = self._relu('relu_2', x)
-
-            print('residual-unit-%s-shape: ' % name + str(x.shape.as_list()))
-
-            return x
-
-    def _bn(self, name, x):
-        with tf.variable_scope(name):
-            return tf.layers.batch_normalization(x, training=self.is_training)
-
-    @staticmethod
-    def _conv(name, x, num_filters=16, kernel_size=(3, 3), padding='SAME', stride=(1, 1),
-              initializer=tf.contrib.layers.xavier_initializer(), l2_strength=0.0):
-
-        with tf.variable_scope(name):
-            stride = [1, stride[0], stride[1], 1]
-            kernel_shape = [kernel_size[0], kernel_size[1], x.shape[-1], num_filters]
-            w = layers._variable_with_weight_decay(kernel_shape, initializer, l2_strength)
-            #variable_summaries(w)
-            conv = tf.nn.conv2d(x, w, stride, padding)
-            return conv
-
-    @staticmethod
-    def _sigmoid(name, x):
-        with tf.variable_scope(name):
-            return tf.nn.sigmoid(x)
-    @staticmethod
-    def _relu(name, x):
-        with tf.variable_scope(name):
-            return tf.nn.relu(x)
-
-
 if __name__ == '__main__':
-    config = {"learning_rate": 1.0e-3,"momentum": 0.99,"weight_decay": 0.00005,"log_interval":2000,"batch_size":16,
-              "number_of_classes": 9,"max_epoch":10,"exp_dir":"Coco_exp_1","model": "","resume_training": 0,
-              "checkpoint":"best_model.ckpt","x_train":"data.npy","y_train":"labels.npy", "img_width":500,
-              "img_height":500, "num_channels":3, "number_of_anchors": 9}
+    config = {"learning_rate": 1.0e-3, "momentum": 0.99, "weight_decay": 0.00005, "log_interval": 2000, "batch_size": 16,
+              "number_of_classes": 9, "max_epoch": 10, "exp_dir": "Coco_exp_1", "model": "", "resume_training": 0,
+              "checkpoint": "best_model.ckpt", "x_train": "data.npy", "y_train": "labels.npy", "img_width": 512,
+              "img_height": 512, "num_channels": 3, "number_of_anchors": 9}
     config = Bunch(config)
     fpn = FPN(config)
     fpn.build()
