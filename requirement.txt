@@ -1,0 +1,3 @@
+keras
+tensorflow>=1.2
+bunch
