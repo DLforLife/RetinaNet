@@ -6,13 +6,16 @@ This is the main API for instantiating the network. It mainly:
 """
 from common.utils.utils import *
 from src import *
-
 def main():
 	config_args = parse_args()
-	folders_list = create_experiment_dirs(config_args.exp_dir)
-	model=class_by_name(config_args.model)
-	agent=class_by_name(config_args.agent)
-	agent=agent()
+	config_args	= create_experiment_dirs(config_args)
+
+	model_class=class_by_name(config_args.model)
+	model=model_class(config_args)
+
+	agent_class=class_by_name(config_args.agent)
+	agent=agent_class(config_args,model)
+
 	#######
 	#todo :
 	#setup the agent structure so we can pass the model to it

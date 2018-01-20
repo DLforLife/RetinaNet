@@ -15,7 +15,7 @@ class BasicAgent:
 		#create Session using the config files
 		self.sess = tf.Session(config=config)
 		# build the model
-		#self.model.build()
+		self.model.build()
 		# init the summaries
 		self.summary_placeholders = {}
 		self.summary_ops = {}

@@ -1,9 +1,16 @@
 {
-  "model": "FpnClass",
-  "agent": "base_agent",
+  "model": "FPN",
+  "agent": "MainAgent",
+  "gpu"  : 1,
+  "gpu_factor"  : 1,
   "learning_rate": 1.0e-3,
   "momentum": 0.99,
   "weight_decay": 0.00005,
+  "img_width":512,
+  "img_height":512,
+  "number_of_anchors":5,
+  "number_of_classes":10,
+  "num_channels":3,
   "log_interval":2000,
   "batch_size":16,
   "num_classes": 9,
@@ -11,6 +18,7 @@
   "exp_dir":"coco_exp_1",
   "resume_training": 0,
   "checkpoint":"best_model.ckpt",
+  "max_to_keep":2,
   "x_train":"data.npy",
   "y_train":"labels.npy"
 }

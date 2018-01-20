@@ -4,7 +4,7 @@ An implementation for the feature pyramid network class.
 import tensorflow as tf
 from bunch import Bunch
 
-from layers import *
+from src.nets.layers import *
 
 class FPN:
     def __init__(self, config):
