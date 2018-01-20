@@ -103,7 +103,3 @@ class BasicAgent:
 			self.saver.save(self.sess, self.config.best_checkpoint_dir, self.model.global_step_tensor)
 			print("[info]Saved a checkpoint for the best model successfully")
 
-	def generator(self):
-		pass
-	def load_data(self):
-		pass
