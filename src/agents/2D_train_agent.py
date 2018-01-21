@@ -1,5 +1,6 @@
 """
-An example for our main agent. It should inhert from the base agent. This will handle the main training procedure, validation and testing.
+An example for our main agent. It should inherit from the base agent.
+This will handle the main training, validation and testing procedure.
 """
 
 #import tensorflow as tf
