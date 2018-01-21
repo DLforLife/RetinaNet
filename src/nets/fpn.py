@@ -149,23 +149,37 @@ class FPN:
         with tf.variable_scope('class_subnet'):
             with tf.variable_scope('conv_1_x'):
                 conv1 = tf.layers.conv2d(input, 256, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv1')
-                conv1 =relu('relu1', conv1)
+                conv1 = self._relu('relu1', conv1)
             with tf.variable_scope('conv_2_x'):
                 conv2 = tf.layers.conv2d(conv1, 256, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv2')
-                conv2 =relu('relu2', conv2)
+                conv2 = self._relu('relu2', conv1)
             with tf.variable_scope('conv_3_x'):
                 conv3 = tf.layers.conv2d(conv2, 256, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv3')
-                conv3 =relu('relu3', conv3)
+                conv3 = self._relu('relu3', conv1)
             with tf.variable_scope('conv_4_x'):
                 conv4 = tf.layers.conv2d(conv3, 256, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv4')
-                conv4 =relu('relu4', conv4)
+                conv4 = self._relu('relu4', conv1)
             with tf.variable_scope('conv_5_x'):
-                conv5 = tf.layers.conv2d(conv4, self.number_of_anchors * self.number_of_classes, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv5')
-                conv5 =sigmoid('sigmoid5', conv5)
-                return conv5
+                out = tf.layers.conv2d(conv4, self.y_classes * self.y_boxes, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv5')
+                return out
 
     def _box_subnet(self, input):
-        raise NotImplementedError("box subnet not implemented")
+        with tf.variable_scope('box_subnet'):
+            with tf.variable_scope('conv_1_x'):
+                conv1 = tf.layers.conv2d(input, 256, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv1')
+                conv1 = self._relu('relu1', conv1)
+            with tf.variable_scope('conv_2_x'):
+                conv2 = tf.layers.conv2d(conv1, 256, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv2')
+                conv2 = self._relu('relu2', conv1)
+            with tf.variable_scope('conv_3_x'):
+                conv3 = tf.layers.conv2d(conv2, 256, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv3')
+                conv3 = self._relu('relu3', conv1)
+            with tf.variable_scope('conv_4_x'):
+                conv4 = tf.layers.conv2d(conv3, 256, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv4')
+                conv4 = self._relu('relu4', conv1)
+            with tf.variable_scope('conv_5_x'):
+                out = tf.layers.conv2d(conv4, self.y_boxes * 4, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv5')
+                return out
 
 if __name__ == '__main__':
     config = {"learning_rate": 1.0e-3, "momentum": 0.99, "weight_decay": 0.00005, "log_interval": 2000, "batch_size": 16,
@@ -175,7 +189,3 @@ if __name__ == '__main__':
     config = Bunch(config)
     fpn = FPN(config)
     fpn.build()
-
-
-
-
