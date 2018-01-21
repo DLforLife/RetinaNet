@@ -10,13 +10,14 @@ This is a tensrflow implementation for the paper [Focal Loss for Dense Object De
 # Requirements:
 ```markdown
 keras
-tensorflow>=1.2
+tensorflow>=1.4.1
 bunch
 ```  
 # Usage :
 
   ```bash
-    pip install -r requirement.txt
+    chmod 777 get_dependencies.sh
+    ./get_dependencies.sh
     chmod 777 run.sh
     ./run.sh
    ```
