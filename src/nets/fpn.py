@@ -148,9 +148,11 @@ class FPN:
 
     def init_output(self):
         with tf.name_scope('output_classes'):
-            self.y_out_classes = self.class_subnet_out1 + self.class_subnet_out2
+            self.y_out_classes = self.class_subnet_out1 + self.class_subnet_out2 + self.class_subnet_out3 + \
+                                 self.class_subnet_out4 + self.class_subnet_out5
         with tf.name_scope('output_boxes'):
-            self.y_out_boxes = self.box_subnet_out1 + self.box_subnet_out2
+            self.y_out_boxes = self.box_subnet_out1 + self.box_subnet_out2 + self.box_subnet_out3 + \
+                               self.box_subnet_out4 + self.box_subnet_out5
 
     def _class_subnet(self, input):
         with tf.variable_scope('class_subnet'):
