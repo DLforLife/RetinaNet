@@ -169,7 +169,8 @@ class FPN:
                 conv4 = tf.layers.conv2d(conv3, 256, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv4')
                 conv4 = relu('relu4', conv4)
             with tf.variable_scope('conv_5_x'):
-                out = tf.layers.conv2d(conv4, self.y_classes * self.y_boxes, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv5')
+                out = tf.layers.conv2d(conv4, self.number_of_classes * self.number_of_anchors, [3, 3], padding='SAME',
+                                       reuse=tf.AUTO_REUSE, name='conv5')
                 return out
 
     def _box_subnet(self, input):
@@ -187,7 +188,8 @@ class FPN:
                 conv4 = tf.layers.conv2d(conv3, 256, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv4')
                 conv4 = relu('relu4', conv4)
             with tf.variable_scope('conv_5_x'):
-                out = tf.layers.conv2d(conv4, self.y_boxes * 4, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv5')
+                out = tf.layers.conv2d(conv4, self.number_of_anchors * 4, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE,
+                                       name='conv5')
                 return out
 
 if __name__ == '__main__':
