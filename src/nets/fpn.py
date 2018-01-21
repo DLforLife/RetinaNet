@@ -131,13 +131,18 @@ class FPN:
                 self.p6 =conv('conv', self.stage5_out, 256, (3, 3), stride=(2, 2))
             with tf.variable_scope('p7'):
                 self.p7 =relu('relu', self.p6)
-                self.p7 =conv('conv', self.stage5_out, 256, (3, 3), stride=(2, 2))
+                self.p7 =conv('conv', self.p7, 256, (3, 3), stride=(2, 2))
             self.class_subnet1 = self._class_subnet(self.merge1)
             self.class_subnet2 = self._class_subnet(self.merge2)
             self.class_subnet3 = self._class_subnet(self.merge3)
-            self.class_subnet2 = self._class_subnet(self.p6)
-            self.class_subnet2 = self._class_subnet(self.p7)
+            self.class_subnet4 = self._class_subnet(self.p6)
+            self.class_subnet5 = self._class_subnet(self.p7)
 
+            self.box_subnet1 = self._box_subnet(self.merge1)
+            self.box_subnet2 = self._box_subnet(self.merge2)
+            self.box_subnet3 = self._box_subnet(self.merge3)
+            self.box_subnet4 = self._box_subnet(self.p6)
+            self.box_subnet5 = self._box_subnet(self.p7)
 
     def init_output(self):
         with tf.name_scope('output_classes'):
