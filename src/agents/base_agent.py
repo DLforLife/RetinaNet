@@ -1,5 +1,5 @@
 """
-Base class for all the agents to inhert. It should include all the common functions shared accross all agents.
+Base class for all the agents to inhert. It should include all the common functions shared across all agents.
 Example: summary writings
 """
 
