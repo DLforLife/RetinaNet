@@ -151,9 +151,11 @@ class FPN:
 		with tf.name_scope('output_classes'):
 			self.y_out_classes = self.class_subnet_out1 + self.class_subnet_out2 + self.class_subnet_out3 + \
 								 self.class_subnet_out4 + self.class_subnet_out5
+
 		with tf.name_scope('output_boxes'):
 			self.y_out_boxes = self.box_subnet_out1 + self.box_subnet_out2 + self.box_subnet_out3 + \
 							   self.box_subnet_out4 + self.box_subnet_out5
+
 		with tf.name_scope('loss'):
 			self.loss = focal_loss(self.y_out_classes, self.y_classes) + \
 						mean_squared_error(self.y_out_boxes, self.y_boxes)
@@ -165,41 +167,34 @@ class FPN:
 		with tf.name_scope('train_op'):
 			self.train_op = tf.train.GradientDescentOptimizer(self.flags.learning_rate).minimize(self.loss)
 
+	def _base_subnet(self, input):
+		with tf.variable_scope('conv_1_x'):
+			conv1 = tf.layers.conv2d(input, 256, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv1')
+			conv1 = relu('relu1', conv1)
+		with tf.variable_scope('conv_2_x'):
+			conv2 = tf.layers.conv2d(conv1, 256, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv2')
+			conv2 = relu('relu2', conv2)
+		with tf.variable_scope('conv_3_x'):
+			conv3 = tf.layers.conv2d(conv2, 256, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv3')
+			conv3 = relu('relu3', conv3)
+		with tf.variable_scope('conv_4_x'):
+			conv4 = tf.layers.conv2d(conv3, 256, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv4')
+			conv4 = relu('relu4', conv4)
+			return conv4
+
 	def _class_subnet(self, input):
 		with tf.variable_scope('class_subnet'):
-			with tf.variable_scope('conv_1_x'):
-				conv1 = tf.layers.conv2d(input, 256, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv1')
-				conv1 = relu('relu1', conv1)
-			with tf.variable_scope('conv_2_x'):
-				conv2 = tf.layers.conv2d(conv1, 256, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv2')
-				conv2 = relu('relu2', conv2)
-			with tf.variable_scope('conv_3_x'):
-				conv3 = tf.layers.conv2d(conv2, 256, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv3')
-				conv3 = relu('relu3', conv3)
-			with tf.variable_scope('conv_4_x'):
-				conv4 = tf.layers.conv2d(conv3, 256, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv4')
-				conv4 = relu('relu4', conv4)
+			base_subnet_out = self._base_subnet(input)
 			with tf.variable_scope('conv_5_x'):
-				out = tf.layers.conv2d(conv4, self.number_of_classes * self.number_of_anchors, [3, 3], padding='SAME',
+				out = tf.layers.conv2d(base_subnet_out, self.number_of_classes * self.number_of_anchors, [3, 3], padding='SAME',
 									   reuse=tf.AUTO_REUSE, name='conv5')
 				return out
 
 	def _box_subnet(self, input):
 		with tf.variable_scope('box_subnet'):
-			with tf.variable_scope('conv_1_x'):
-				conv1 = tf.layers.conv2d(input, 256, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv1')
-				conv1 = relu('relu1', conv1)
-			with tf.variable_scope('conv_2_x'):
-				conv2 = tf.layers.conv2d(conv1, 256, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv2')
-				conv2 = relu('relu2', conv2)
-			with tf.variable_scope('conv_3_x'):
-				conv3 = tf.layers.conv2d(conv2, 256, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv3')
-				conv3 = relu('relu3', conv3)
-			with tf.variable_scope('conv_4_x'):
-				conv4 = tf.layers.conv2d(conv3, 256, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE, name='conv4')
-				conv4 = relu('relu4', conv4)
+			base_subnet_out = self._base_subnet(input)
 			with tf.variable_scope('conv_5_x'):
-				out = tf.layers.conv2d(conv4, self.number_of_anchors * 4, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE,
+				out = tf.layers.conv2d(base_subnet_out, self.number_of_anchors * 4, [3, 3], padding='SAME', reuse=tf.AUTO_REUSE,
 									   name='conv5')
 				return out
 
