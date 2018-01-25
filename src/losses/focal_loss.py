@@ -1,3 +1,0 @@
-"""
-Implementation for focal loss
-"""
