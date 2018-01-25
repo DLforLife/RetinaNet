@@ -16,6 +16,10 @@ class FPN:
 		self.number_of_classes = self.config.number_of_classes
 		self.confidence_threshold = self.config.confidence_threshold
 		self.learning_rate = self.config.learning_rate
+		self.anchor_scales = self.config.anchor_scales
+		self.anchor_ratios = self.config.anchor_ratios
+		self.anchor_sizes = self.config.anchor_sizes
+		self.anchor_strides = self.config.anchor_strides
 		#########################################
 		self.x = None
 		self.y_classes = None
@@ -155,6 +159,9 @@ class FPN:
 		with tf.name_scope('output_boxes'):
 			self.y_out_boxes = self.box_subnet_out1 + self.box_subnet_out2 + self.box_subnet_out3 + \
 							   self.box_subnet_out4 + self.box_subnet_out5
+
+		with tf.name_scope('output_activated'):
+			self.y_out_boxes_activated =
 
 		with tf.name_scope('loss'):
 			self.loss = focal_loss(self.y_out_classes, self.y_classes) + \
