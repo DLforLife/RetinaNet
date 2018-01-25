@@ -1,5 +1,6 @@
 """
-Implementation for focal loss
+Implementations for the functions related to the class loss
+1. Focal loss
 """
 import numpy as np
 import tensorflow as tf
@@ -58,3 +59,29 @@ class FocalLoss:
         """
         xt = tf.where(tf.equal(onehot_labels, 1), x, 1. - x)
         return xt
+
+"""
+2. 2D cross entropy
+"""
+class CrossEntropy:
+    def __init__(self, logits, labels):
+        """
+        Initialzing the parameters for 2D Cross entropy
+        Args:
+        - logits(Tensor): class predictions of shape [Batch_size, num_classes]
+        - one_hot_labels (Tensor): ground truth one hot lables of shape [Batch_size, num_classes]
+        Returns:
+        - loss
+        """
+        self.logits = logits
+        self.labels = labels
+
+    def calculate(self):
+        """
+        Computing the focal loss
+        Args:
+        Returns:
+        """
+        loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.labels)
+        loss = tf.reduce_mean(loss)
+        return loss
