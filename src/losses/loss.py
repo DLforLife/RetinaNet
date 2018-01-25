@@ -1,14 +1,13 @@
 """
-Implementation of the multitask loss
+Implementation of the multi-task loss
 """
 import tensorflow as tf
-from focal_loss import *
-from cross_entropy import *
+from class_loss import *
 from regression_loss import *
 
-def multi_loss(pred_classes, pred_boxes, gt_labels, gt_anchors, num_classes, weights=None):
+def multi_task_loss(pred_classes, pred_boxes, gt_labels, gt_anchors, num_classes, weights=None):
     """
-    Calculating the loss for both class predictions and box regression, using simple addition
+    Calculating the loss for both class predictions and box regression, using s
     """
     print ("Multi task loss...")
 
@@ -21,11 +20,13 @@ def multi_loss(pred_classes, pred_boxes, gt_labels, gt_anchors, num_classes, wei
     sess.close()
     return total_loss
 
-
+"""
+For testing the loss functions
+"""
 if __name__ == '__main__':
     logits = tf.convert_to_tensor([[0.2, 0.3, 0.4, 0.5], [0.5, 0.4, 0.3, 0.2]])
     num_classes = 4
     labels = tf.constant([1, 2])
     bbox = tf.ones_like(logits)
-    loss = multi_loss(pred_classes=logits, pred_boxes=logits, gt_labels=labels, gt_anchors=bbox,num_classes=num_classes)
+    loss = multi_task_loss(pred_classes=logits, pred_boxes=logits, gt_labels=labels, gt_anchors=bbox,num_classes=num_classes)
     print ("Loss", loss)
