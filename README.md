@@ -1,5 +1,5 @@
 # RetinaNet
-This is a tensorflow implementation for the paper [Focal Loss for Dense Object Detection](https://arxiv.org/abs/1708.02002) which is shorten as `RetinaNet`
+This is a tensorflow implementation for the paper [Focal Loss for Dense Object Detection](https://arxiv.org/abs/1708.02002) by FACEBOOK AI Research which is shorten as `RetinaNet`
 
 # References:
 - [Focal Loss for Dense Object Detection](https://arxiv.org/abs/1708.02002)
