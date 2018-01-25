@@ -76,6 +76,10 @@ def conv(name, x, num_filters=16, kernel_size=(3, 3), padding='SAME', stride=(1,
         conv = tf.nn.conv2d(x, w, stride, padding)
         return conv
 
+def softmax(name, x, dim):
+	with tf.variable_scope(name):
+		return tf.nn.softmax(x, dim, name)
+
 def sigmoid(name, x):
     with tf.variable_scope(name):
         return tf.nn.sigmoid(x)
