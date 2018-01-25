@@ -15,6 +15,7 @@ class FPN:
 		self.number_of_anchors = self.config.number_of_anchors
 		self.number_of_classes = self.config.number_of_classes
 		self.confidence_threshold = self.config.confidence_threshold
+		self.iou_threshold = self.config.iou_threshold
 		self.learning_rate = self.config.learning_rate
 		self.anchor_scales = self.config.anchor_scales
 		self.anchor_ratios = self.config.anchor_ratios
@@ -33,6 +34,7 @@ class FPN:
 		self.loss = None
 		self.loss_indicator = None
 		self.train_op = None
+		self.metrics = Metrics(self.labels, self.confidence_threshold, self.iou_threshold)
 		self.precision = None
 		self.recall = None
 		#########################################
@@ -160,16 +162,22 @@ class FPN:
 			self.y_out_boxes = self.box_subnet_out1 + self.box_subnet_out2 + self.box_subnet_out3 + \
 							   self.box_subnet_out4 + self.box_subnet_out5
 
-		with tf.name_scope('output_activated'):
-			self.y_out_boxes_activated =
+		with tf.name_scope('output_decoded'):
+			self.y_out_decoded = decode_netout([self.class_subnet_out1, self.class_subnet_out2,
+			                                    self.class_subnet_out3, self.class_subnet_out4,
+			                                    self.class_subnet_out5],
+			                                   [self.box_subnet_out1, self.box_subnet_out2,
+			                                    self.box_subnet_out3, self.box_subnet_out4,
+			                                    self.box_subnet_out5])
 
 		with tf.name_scope('loss'):
 			self.loss = focal_loss(self.y_out_classes, self.y_classes) + \
 						mean_squared_error(self.y_out_boxes, self.y_boxes)
 
 		with tf.name_scope('metrics'):
-			self.precision = precision((self.y_out_classes, self.y_out_boxes), (self.y_classes, self.y_boxes))
-			self.recall = recall((self.y_out_classes, self.y_out_boxes), (self.y_classes, self.y_boxes))
+			self.metrics.update_metrics(y_boxes, self.y_out_decoded)
+			self.precision = metrics.precision
+			self.recall = metrics.recall
 
 		with tf.name_scope('train_op'):
 			self.train_op = tf.train.GradientDescentOptimizer(self.flags.learning_rate).minimize(self.loss)
