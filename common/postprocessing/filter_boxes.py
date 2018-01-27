@@ -11,6 +11,27 @@ def decode_highest_scores(detector_confidence=0.05):
     section 4.1: inference
     """
 
+def tf_non_max_suppression(pred_boxes, pred_scores, max_output_size=256, iou_threshold=0.5, name="nms"):
+    """
+    Perfoms non max suppresion based on Tensorflow's implementation
+    Args:
+    - pred_boxes (tensor): predicted boxes
+    - pred_scores (tensor): predicted scores
+    - max_output_size (int): max number of boxes to choose
+    - iou_threshold (float):
+    Returns:
+    - final_detection_list: filtered detected box list
+    """
+    if not 0 <= iou_threshold <= 1.0:
+        raise ValueError('iou_thresh must be between 0 and 1')
+    final_detected_indices=tf.image.non_max_suppression(boxes=pred_boxes,\
+                                                        scores=pred_scores,\
+                                                        max_output_size=max_output_size,\
+                                                        iou_threshold=iou_threshold,\
+                                                        name=name)
+
+    return tf.gather(pred_boxes, final_detected_indices)
+
 def non_max_suppression(pred_boxes, pred_scores, threshold=0.5):
     """
     Perfoms non max suppresion to choose the max score detections based on IOU
@@ -73,7 +94,9 @@ def Intersection_over_union(box_one, box_two):
 For testing..
 """
 if __name__ == "__main__":
-    detections = np.array([(11, 11, 24, 24), (10, 11, 20, 20), (11, 9, 24, 24), (40, 42, 20, 20)])
-    scores = np.array([0.75, 0.8, 0.7, 0.6])
-    final_detections = non_max_suppression(detections,scores)
+    box_pred = tf.convert_to_tensor([(11.0, 11.0, 24.0, 24.0), (10.0, 11.0, 20.0, 20.0), (11.0, 9.0, 24.0, 24.0), (40.0, 42.0, 20.0, 20.0)])
+    scores = tf.convert_to_tensor([0.75, 0.8, 0.7, 0.6])
+    print (scores.get_shape())
+    print (box_pred.get_shape())
+    final_detections = tf.Session().run(tf_non_max_suppression(box_pred, scores))
     print ('Final Detections: ' + ', '.join(map(str, final_detections)))
