@@ -57,7 +57,7 @@ class data_augmentation:
         flipped_box = tf.concat([flipped_x, y, w, h], 1)
         return flipped_box
 
-    def random_vertical_flip(self, flip_prob=0.5):
+    def random_vertical_flip(self, image, boxes, flip_prob=0.5):
         """
         Performs random vertical flipping to the image and/or box
         Args:
