@@ -1,9 +1,15 @@
 """
 Performs anchor filtering based on their IOU
 - non-maximum suppression with a threshold of 0.5
-boxes : nx4, scores: nx1
 """
 import numpy as np
+def decode_highest_scores(detector_confidence=0.05):
+    """
+    To improve speed, we only decode box predictions from at most
+    1k top-scoring predictions per FPN level, after thresholding detector confidence at 0.05
+    section 4.1: inference
+    """
+
 def Intersection_over_union(box_one, box_two):
     """
     Calculates intersection over union between 2 boxes
@@ -37,20 +43,15 @@ def Intersection_over_union(box_one, box_two):
     iou = intersected_area/float(union_area)
     return iou
 
-def decode_highest_scores(detector_confidence=0.05):
-    """
-    To improve speed, we only decode box predictions from at most
-    1k top-scoring predictions per FPN level, after thresholding detector confidence at 0.05
-    """
 def non_max_suppression(box_y, box_pred, class_scores=None, sort=False, iou_threshold=0.5):
     """
     Perfoms non max suppresion to choose the max score detections based on IOU
     Args:
-    - box_pred (numpy array):
-    - class_scores (numpy array):
+    - box_y (numpy array): ground truth boxes
+    - box_pred (numpy array): predicted boxes
     - threshold (float):
     Returns:
-    - final_detection_list (numpy array):
+    - final_detection_list (numpy array): filtered detected box list
     """
     print ("Calculating non-max suppression")
 
