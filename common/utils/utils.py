@@ -13,10 +13,12 @@ def parse_args():
 	"""
 	# Create a parser
 	parser = argparse.ArgumentParser(description="")
-	parser.add_argument('--config', default=None, type=str, help='Configuration file')
+	parser.add_argument('config', default='configs/main_config.json', type=str, help='Configuration file')
 	# Parse the arguments
 	args = parser.parse_args()
 	# parse the configurations from the config json file provided
+	print(args.config)
+
 	with open(args.config, 'r') as config_file:
 		config_args_dict = json.load(config_file)
 	# convert the dictionary to a namespace using bunch lib

@@ -16,13 +16,6 @@ def main():
 	agent_class=class_by_name(config_args.agent)
 	agent=agent_class(config_args,model)
 
-	#######
-	#todo :
-	#setup the agent structure so we can pass the model to it
-	#expected api :
-	# agent=agent(config=config_args,folders=folders_list,model_used=model)
-	#######
-
 	try:
 		agent.run()
 		agent.finish()
