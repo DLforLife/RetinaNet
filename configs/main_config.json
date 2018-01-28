@@ -1,5 +1,5 @@
 {
-  "model": "FpnClass",
+  "model": "FPN",
   "agent": "base_agent",
   "learning_rate": 1.0e-3,
   "momentum": 0.99,
