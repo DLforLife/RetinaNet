@@ -10,6 +10,7 @@ class Metrics():
 		self.tp = None
 		self.precision = None
 		self.recall = None
+		self.f1_measure = None
 		self.labels = labels
 		self.iou_threshold = iou_threshold
 		self.conf_threshold = conf_threshold
@@ -50,6 +51,7 @@ class Metrics():
 		self.fn += fn
 		self.precision = self.tp / (self.tp + self.fp)
 		self.recall = self.tp / (self.tp + self.fn)
+		self.f1_measure = 2 * (self.precision * self.recall) / (self.precision + self.recall)
 
 	def reset(self):
 		self.fp = 0
@@ -57,3 +59,4 @@ class Metrics():
 		self.tp = 0
 		self.precision = 0
 		self.recall = 0
+		self.f1_measure = 0
