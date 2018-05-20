@@ -106,7 +106,7 @@ def main():
 
         # Download the annotations.
         download_and_unzip('http://images.cocodataset.org/annotations/annotations_trainval2017.zip', root, args.dataset)
-        
+
         #  Download the test image info.
         download_and_unzip('http://images.cocodataset.org/annotations/image_info_test2017.zip', root, args.dataset)
 
