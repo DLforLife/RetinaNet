@@ -99,6 +99,7 @@ def main():
     root = args.folder if args.folder else '../../data'
 
     if args.dataset == 'COCO2017':
+        # TODO: download COCO API from https://github.com/cocodataset/cocoapi
         # Download the images.
         download_and_unzip('http://images.cocodataset.org/zips/train2017.zip', root, args.dataset)
         download_and_unzip('http://images.cocodataset.org/zips/val2017.zip', root, args.dataset)
